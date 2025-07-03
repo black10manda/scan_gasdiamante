@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
-import 'pages/login.dart';
+import 'pages/auth/login.dart';
 import 'services/storage.dart';
+import 'package:provider/provider.dart';
+import 'providers/user_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'pages/admin/users/admin_users_list.dart';
+import 'pages/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load();
   await initAdminUser();
-  runApp(const MyApp());
+
+  final userProvider = UserProvider();
+  await userProvider.loadUser();
+
+  runApp(
+    ChangeNotifierProvider(create: (_) => userProvider, child: const MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,6 +26,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    Widget home;
+
+    if (!userProvider.isLoggedIn) {
+      home = const LoginPage();
+    } else if (userProvider.isAdmin) {
+      home = const AdminUsersList();
+    } else {
+      home = const HomePage();
+    }
+
     return MaterialApp(
       title: 'Toma de Lectura',
       theme: ThemeData(
@@ -34,7 +59,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginPage(),
+      home: home,
       debugShowCheckedModeBanner: false,
     );
   }
