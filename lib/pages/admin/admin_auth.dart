@@ -4,6 +4,7 @@ import 'users/admin_users_list.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AdminAuth extends StatefulWidget {
   const AdminAuth({super.key});
@@ -17,7 +18,8 @@ class _AdminAuthState extends State<AdminAuth> {
 
   Future<void> _auth() async {
     final pass = _passController.text;
-    final user = await getUserByLogin('admin', pass);
+    final username = dotenv.env['ADMIN_USERNAME'] ?? 'admin';
+    final user = await getUserByLogin(username, pass);
 
     if (!mounted) return;
 

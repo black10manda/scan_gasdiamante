@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/user_provider.dart';
+import 'auth/login.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,6 +19,33 @@ class _HomePageState extends State<HomePage> {
         title: const Text('HOME'),
         backgroundColor: const Color(0xFF971c17),
         foregroundColor: Colors.white,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.settings),
+            onSelected: (value) async {
+              if (value == 'logout') {
+                final userProvider = Provider.of<UserProvider>(
+                  context,
+                  listen: false,
+                );
+                await userProvider.logout();
+
+                if (!context.mounted) return;
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'logout',
+                child: Text('Cerrar sesión'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(

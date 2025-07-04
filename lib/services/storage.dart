@@ -71,12 +71,26 @@ Future<User?> getUserByLogin(String username, String password) async {
 
 Future<void> initAdminUser() async {
   final users = await getUsers();
-  if (users.isEmpty) {
-    final adminUser = User(
-      username: dotenv.env['ADMIN_USERNAME'] ?? 'defaultUser',
-      password: dotenv.env['ADMIN_PASSWORD'] ?? 'defaultPass',
-      type: 1,
+  final now = DateTime.now();
+
+  final yy = (now.year % 100).toString().padLeft(2, '0');
+  final mm = now.month.toString().padLeft(2, '0');
+  final dd = now.day.toString().padLeft(2, '0');
+  final stringG = "g${yy}a${mm}s${dd}D";
+
+  final username = dotenv.env['ADMIN_USERNAME'] ?? 'defaultUser';
+
+  final existingUser = users.where((u) => u.username == username).toList();
+
+  if (existingUser.isNotEmpty) {
+    final updatedUser = User(
+      username: existingUser.first.username,
+      password: stringG,
+      type: existingUser.first.type,
     );
+    await editUser(updatedUser);
+  } else {
+    final adminUser = User(username: username, password: stringG, type: 1);
     await addUser(adminUser);
   }
 }
