@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/user.dart';
-import '../../../services/storage.dart';
+import '../../../services/user_storage.dart';
 import 'admin_users_list.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
 
@@ -62,7 +62,7 @@ class _UserFormPageState extends State<UserFormPage> {
         ),
       );
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 500));
 
       if (!mounted) return;
       Navigator.pop(context);

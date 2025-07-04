@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../services/storage.dart';
+import '../../services/user_storage.dart';
 import '../admin/admin_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../home.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 // import '../../models/user.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,6 +19,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
 
+  bool _guardarSesion = false;
+
   Future<void> _login() async {
     final user = _userController.text;
     final pass = _passController.text;
@@ -28,7 +31,18 @@ class _LoginPageState extends State<LoginPage> {
 
     if (userValid != null && userValid.type == 2) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.setUser(userValid);
+      await userProvider.setUser(userValid, persist: _guardarSesion);
+
+      if (_guardarSesion) {
+        Fluttertoast.showToast(
+          msg: "Autenticación automática...",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.black87,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
 
       if (!mounted) return;
 
@@ -86,6 +100,16 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               PasswordTextField(controller: _passController),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: Text('Guardar sesión'),
+                value: _guardarSesion,
+                onChanged: (bool nuevoValor) {
+                  setState(() {
+                    _guardarSesion = nuevoValor;
+                  });
+                },
+              ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,

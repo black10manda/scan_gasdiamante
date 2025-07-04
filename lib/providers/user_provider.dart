@@ -11,13 +11,15 @@ class UserProvider with ChangeNotifier {
   bool get isLoggedIn => _user != null;
   bool get isAdmin => _user?.type == 1;
 
-  Future<void> setUser(User user) async {
+  Future<void> setUser(User user, {bool persist = true}) async {
     _user = user;
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = jsonEncode(user.toJson());
-    await prefs.setString('user', userJson);
+    if (persist) {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = jsonEncode(user.toJson());
+      await prefs.setString('user', userJson);
+    }
   }
 
   Future<void> loadUser() async {

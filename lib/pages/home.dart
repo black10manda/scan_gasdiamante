@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('HOME'),
+        title: const Text('Lectura'),
         backgroundColor: const Color(0xFF971c17),
         foregroundColor: Colors.white,
         actions: [
