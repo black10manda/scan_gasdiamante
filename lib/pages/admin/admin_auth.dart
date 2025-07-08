@@ -107,12 +107,16 @@ class _AdminAuthState extends State<AdminAuth> {
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(60),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
                 onPressed: _auth,
-                child: Text('Guardar'),
+                child: const Text(
+                  'Validar',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+                ),
               ),
             ],
           ),

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/admin/users/admin_users_list.dart';
-import 'pages/home.dart';
+import 'pages/lectura.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
     } else if (userProvider.isAdmin) {
       home = const AdminUsersList();
     } else {
-      home = const HomePage();
+      home = const LecturaPage();
     }
 
     return MaterialApp(

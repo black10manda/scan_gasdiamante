@@ -7,7 +7,7 @@ class PasswordTextField extends StatefulWidget {
   const PasswordTextField({
     super.key,
     required this.controller,
-    this.label = 'Contraseña:',
+    this.label = 'Contraseña',
   });
 
   @override
@@ -19,23 +19,36 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: widget.controller,
-      obscureText: _obscurePassword,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '${widget.label}:',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
           ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
         ),
-      ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: widget.controller,
+          obscureText: _obscurePassword,
+          decoration: InputDecoration(
+            hintText: widget.label,
+            border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

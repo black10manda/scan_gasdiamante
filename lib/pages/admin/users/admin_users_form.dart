@@ -3,6 +3,7 @@ import '../../../models/user.dart';
 import '../../../services/user_storage.dart';
 import 'admin_users_list.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
+import 'package:lectura_gas_diamante/widgets/labeled_text_field.dart';
 
 class UserFormPage extends StatefulWidget {
   final User? userToEdit;
@@ -95,12 +96,9 @@ class _UserFormPageState extends State<UserFormPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextField(
+              LabeledTextField(
+                label: 'Usuario',
                 controller: _userController,
-                decoration: const InputDecoration(
-                  labelText: 'Usuario:',
-                  border: OutlineInputBorder(),
-                ),
                 enabled: !isEditing,
               ),
               const SizedBox(height: 16),

@@ -3,8 +3,9 @@ import '../../services/user_storage.dart';
 import '../admin/admin_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../home.dart';
+import '../lectura.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
+import 'package:lectura_gas_diamante/widgets/labeled_text_field.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 // import '../../models/user.dart';
 
@@ -48,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
+        MaterialPageRoute(builder: (_) => const LecturaPage()),
       );
 
       return;
@@ -88,16 +89,10 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Image.asset(
                 'assets/images/logo_gas_diamante.jpg',
-                width: 500,
-                height: 500,
+                width: 400,
+                height: 400,
               ),
-              TextField(
-                controller: _userController,
-                decoration: const InputDecoration(
-                  labelText: 'Usuario:',
-                  border: OutlineInputBorder(),
-                ),
-              ),
+              LabeledTextField(label: 'Usuario', controller: _userController),
               const SizedBox(height: 16),
               PasswordTextField(controller: _passController),
               const SizedBox(height: 16),
@@ -113,6 +108,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
+                height: 60,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
@@ -126,7 +122,13 @@ class _LoginPageState extends State<LoginPage> {
                       MaterialPageRoute(builder: (_) => const AdminAuth()),
                     );
                   },
-                  child: const Text('Ingresar'),
+                  child: const Text(
+                    'Ingresar',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
                 ),
               ),
             ],
