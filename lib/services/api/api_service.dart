@@ -1,15 +1,14 @@
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lectura_gas_diamante/services/data_storage.dart';
+import 'package:lectura_gas_diamante/models/cliente.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class ApiService {
   static final String baseUrl =
       dotenv.env['API_URL'] ?? 'http://getpost.si-nube.appspot.com/';
 
-  static Future<Map<String, dynamic>?> fetchClienteDetalle(
-    int? idCliente,
-  ) async {
+  static Future<Cliente?> fetchClienteDetalle(int? idCliente) async {
     final siNubeData = await getSiNubeData();
 
     if (idCliente == null) {
@@ -18,14 +17,21 @@ class ApiService {
 
     if (siNubeData == null) {
       throw Exception(
-        'No hay configuración guardada (SiNubeData), Acceda a la configuración de administrador.',
+        'No hay configuración guardada (SiNubeData), acceda a la configuración de administrador.',
       );
     }
 
-    final rawQuery =
-        "SELECT c.cliente, c.rfcCliente, c.razonSocial, a.almacen as condominio, d.noInterior as departamento FROM DbCliente as c INNER JOIN DbCliente_A as a ON a.keyAncestor = c.key LEFT JOIN DbClienteDireccion as d ON d.empresa = c.empresa AND d.cliente = c.cliente AND d.moneda = c.moneda WHERE c.empresa = '${siNubeData.empresa}' and c.cliente = $idCliente and d.tipo = 1";
+    final hasInternet = await InternetConnectionChecker.instance.hasConnection;
+    if (!hasInternet) {
+      throw Exception('Sin conexión a internet.');
+    }
 
-    // final encodedQuery = Uri.encodeComponent(rawQuery);
+    final rawQuery =
+        "SELECT c.cliente, c.rfcCliente, c.razonSocial, a.almacen as condominio, d.noInterior as departamento "
+        "FROM DbCliente as c "
+        "INNER JOIN DbCliente_A as a ON a.keyAncestor = c.key "
+        "LEFT JOIN DbClienteDireccion as d ON d.empresa = c.empresa AND d.cliente = c.cliente AND d.moneda = c.moneda "
+        "WHERE c.empresa = '${siNubeData.empresa}' and c.cliente = $idCliente and d.tipo = 1";
 
     final uri = Uri.parse(baseUrl).replace(
       path: '/getpost',
@@ -43,7 +49,10 @@ class ApiService {
       final response = await http.post(uri);
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final rawString = response.body.trim();
+        if (rawString.isEmpty || !rawString.contains('¬')) return null;
+
+        return Cliente.fromCustomFormat(rawString);
       } else {
         return null;
       }

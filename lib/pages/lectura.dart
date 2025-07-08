@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
 import 'auth/login.dart';
@@ -6,6 +7,7 @@ import 'package:lectura_gas_diamante/widgets/labeled_text_field.dart';
 import 'package:lectura_gas_diamante/pages/readers/qr_scanner_page.dart';
 import 'package:lectura_gas_diamante/services/api/api_service.dart';
 import 'package:lectura_gas_diamante/services/data_storage.dart';
+import 'package:lectura_gas_diamante/pages/readers/camera_page.dart';
 
 class LecturaPage extends StatefulWidget {
   const LecturaPage({super.key});
@@ -16,6 +18,8 @@ class LecturaPage extends StatefulWidget {
 
 class _LecturaPageState extends State<LecturaPage> {
   final TextEditingController _idClienteController = TextEditingController();
+  final FocusNode _idClienteFocusNode = FocusNode();
+
   final TextEditingController _condominioController = TextEditingController();
   final TextEditingController _departamentoController = TextEditingController();
   final TextEditingController _clienteController = TextEditingController();
@@ -24,10 +28,92 @@ class _LecturaPageState extends State<LecturaPage> {
   final TextEditingController _codigoMedidorController =
       TextEditingController();
 
+  String? _rutaFoto;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _idClienteFocusNode.addListener(() {
+      if (!_idClienteFocusNode.hasFocus) {
+        final idCliente = int.tryParse(_idClienteController.text);
+        if (idCliente != null) {
+          _fetchClientePorId(idCliente);
+        } else {
+          setState(() {
+            _clienteController.clear();
+            _rfcController.clear();
+            _condominioController.clear();
+            _departamentoController.clear();
+            _periodoController.clear();
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _idClienteController.dispose();
+    _idClienteFocusNode.dispose();
+    _condominioController.dispose();
+    _departamentoController.dispose();
+    _clienteController.dispose();
+    _rfcController.dispose();
+    _periodoController.dispose();
+    _codigoMedidorController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchClientePorId(int idCliente) async {
+    _showLoadingDialog();
+
+    try {
+      final cliente = await ApiService.fetchClienteDetalle(idCliente);
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      setState(() {
+        _clienteController.text = cliente?.clienteNombre ?? '';
+        _rfcController.text = cliente?.rfc ?? '';
+        _condominioController.text = cliente?.condominio ?? '';
+        _departamentoController.text = cliente?.departamento ?? '';
+        _periodoController.text = cliente?.periodo.toString() ?? '';
+      });
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+
+      final errorMsg = e.toString();
+      if (errorMsg.contains('Sin conexión a internet')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Continuando sin conexión...')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al obtener datos del cliente')),
+        );
+      }
+    }
+  }
+
+  Future<void> _abrirCamaraYProcesarFoto() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const CameraPage()),
+    );
+
+    if (result != null && context.mounted) {
+      setState(() {
+        _rutaFoto = result;
+      });
+    }
+  }
+
   void _handleQrResult(String qrResult) async {
     final idCliente = int.tryParse(qrResult);
     if (idCliente == null) {
       _showErrorDialog('Código QR inválido');
+      return;
     }
 
     final siNubeData = await getSiNubeData();
@@ -35,47 +121,60 @@ class _LecturaPageState extends State<LecturaPage> {
       _showErrorDialog(
         'No hay configuración guardada. Contácte al administrador del sistema.',
       );
+      return;
     }
 
     _showLoadingDialog();
 
     try {
-      final clienteData = await ApiService.fetchClienteDetalle(idCliente);
+      final cliente = await ApiService.fetchClienteDetalle(idCliente);
+      if (!mounted) return;
       Navigator.pop(context);
 
-      if (clienteData == null) {
-        _showErrorDialog('No se encontró información del cliente.');
-      } else {
-        _showClienteData(clienteData);
-        setState(() {
-          _idClienteController.text = idCliente.toString();
-        });
-      }
+      setState(() {
+        _idClienteController.text = idCliente.toString();
+        _clienteController.text = cliente?.clienteNombre ?? '';
+        _rfcController.text = cliente?.rfc ?? '';
+        _condominioController.text = cliente?.condominio ?? '';
+        _departamentoController.text = cliente?.departamento ?? '';
+        _periodoController.text = cliente?.periodo.toString() ?? '';
+      });
     } catch (e) {
-      Navigator.pop(context);
-      _showErrorDialog('Error al obtener datos: $e');
-      return;
-    }
+      if (mounted) Navigator.pop(context);
+      final errorMsg = e.toString();
+      if (errorMsg.contains('Sin conexión a internet')) {
+        if (!mounted) return;
 
-    setState(() {
-      _idClienteController.text = idCliente.toString();
-    });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Continuando sin conexión...')),
+        );
+      } else {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al obtener datos del cliente')),
+        );
+      }
+    }
   }
 
   void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   void _showLoadingDialog() {
@@ -86,26 +185,10 @@ class _LecturaPageState extends State<LecturaPage> {
     );
   }
 
-  void _showClienteData(Map<String, dynamic> data) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Datos del cliente'),
-        content: Text(data.toString()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Asegura que el teclado no tape campos
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Lectura'),
@@ -122,9 +205,7 @@ class _LecturaPageState extends State<LecturaPage> {
                   listen: false,
                 );
                 await userProvider.logout();
-
                 if (!context.mounted) return;
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -153,6 +234,8 @@ class _LecturaPageState extends State<LecturaPage> {
                     child: LabeledTextField(
                       label: 'ID Cliente',
                       controller: _idClienteController,
+                      focusNode: _idClienteFocusNode,
+                      isNumber: true,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -241,7 +324,7 @@ class _LecturaPageState extends State<LecturaPage> {
                     child: Material(
                       color: const Color(0xFF971c17),
                       child: InkWell(
-                        onTap: () {},
+                        onTap: _abrirCamaraYProcesarFoto,
                         child: const Center(
                           child: Icon(
                             Icons.camera_alt,
@@ -253,6 +336,17 @@ class _LecturaPageState extends State<LecturaPage> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: _rutaFoto == null
+                    ? Image.asset(
+                        'assets/images/tu_imagen_default.png',
+                        fit: BoxFit.contain,
+                      )
+                    : Image.file(File(_rutaFoto!), fit: BoxFit.cover),
               ),
             ],
           ),

@@ -41,6 +41,11 @@ dependencies:
   fluttertoast: ^8.2.2
   mobile_scanner: ^4.0.0
   http: ^1.2.1
+  internet_connection_checker: ^3.0.1
+  camera: ^0.10.0+4
+  # image_picker: ^1.0.7
+  # image: ^3.0.2
+  # google_mlkit_text_recognition: 0.10.0
 
 dev_dependencies:
   flutter_test:

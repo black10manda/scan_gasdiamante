@@ -20,7 +20,23 @@ class _AdminUsersListState extends State<AdminUsersList> {
   @override
   void initState() {
     super.initState();
-    _loadUsers();
+    _checkUserAndLoad();
+  }
+
+  Future<void> _checkUserAndLoad() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.loadUser();
+
+    if (!userProvider.isLoggedIn || !userProvider.isAdmin) {
+      if (!mounted) return;
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+      return;
+    }
+
+    // Si todo bien, cargar usuarios
+    await _loadUsers();
   }
 
   Future<void> _loadUsers() async {
