@@ -1,8 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:lectura_gas_diamante/services/data_storage.dart';
+import 'package:lectura_gas_diamante/services/storage/data_storage.dart';
 import 'package:lectura_gas_diamante/models/cliente.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:lectura_gas_diamante/models/registro_lectura.dart';
+import 'dart:convert';
 
 class ApiService {
   static final String baseUrl =
@@ -58,6 +60,64 @@ class ApiService {
       }
     } catch (e) {
       return null;
+    }
+  }
+
+  static Future<bool> enviarLectura(RegistroLectura registro) async {
+    try {
+      final siNubeData = await getSiNubeData();
+
+      if (siNubeData == null) {
+        throw Exception(
+          'No hay configuración guardada (SiNubeData), acceda a la configuración de administrador.',
+        );
+      }
+
+      final cliente = registro.cliente;
+
+      if ([
+        cliente.periodo,
+        cliente.condominio,
+        cliente.departamento,
+        cliente.rfc,
+        cliente.clienteNombre,
+        cliente.lectura,
+      ].any((e) => e == null || e.toString().isEmpty)) {
+        throw Exception('Faltan datos obligatorios del cliente.');
+      }
+
+      final url = Uri.parse(
+        'https://ep-dot-gas-sinube.appspot.com/api/v1/lectura_agregar/${siNubeData.empresa}/${siNubeData.sucursal}/${siNubeData.usuario}/${siNubeData.password}',
+      );
+
+      final body = {
+        "lstString": [
+          cliente.periodo!,
+          cliente.idCliente.toString(),
+          cliente.condominio!,
+          cliente.departamento!,
+          cliente.rfc!,
+          cliente.clienteNombre!,
+          cliente.lectura!,
+        ],
+        "lstLong": registro.imagenMedidor,
+      };
+
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('No se pudo envíar el registro.');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 }

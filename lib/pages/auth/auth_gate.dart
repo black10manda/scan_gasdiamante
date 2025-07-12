@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import 'login.dart';
-import '../lectura.dart';
+import '../registro_lectura/lectura.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});

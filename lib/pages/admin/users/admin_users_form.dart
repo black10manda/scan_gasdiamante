@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/user.dart';
-import '../../../services/user_storage.dart';
+import '../../../services/storage/user_storage.dart';
 import 'admin_users_list.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
 import 'package:lectura_gas_diamante/widgets/labeled_text_field.dart';

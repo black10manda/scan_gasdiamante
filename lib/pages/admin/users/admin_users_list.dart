@@ -4,7 +4,7 @@ import '../admin_config.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
 import 'admin_users_form.dart';
-import '../../../services/user_storage.dart';
+import '../../../services/storage/user_storage.dart';
 import '../../../models/user.dart';
 
 class AdminUsersList extends StatefulWidget {

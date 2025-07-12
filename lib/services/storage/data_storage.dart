@@ -1,6 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
-import '../models/sinube_data.dart';
+import '../../models/sinube_data.dart';
 
 final storage = FlutterSecureStorage();
 const _keySiNubeData = 'sinube_data';

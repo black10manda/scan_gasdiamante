@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'pages/auth/login.dart';
-import 'services/user_storage.dart';
+import 'services/storage/user_storage.dart';
 import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/admin/users/admin_users_list.dart';
-import 'pages/lectura.dart';
+import 'pages/registro_lectura/lectura.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lectura_gas_diamante/pages/admin/users/admin_users_list.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
-import '../../services/data_storage.dart';
+import '../../services/storage/data_storage.dart';
 import '../../models/sinube_data.dart';
 
 class AdminConfigPage extends StatefulWidget {

@@ -1,38 +1,42 @@
 class Cliente {
+  final int? periodo;
   final int idCliente;
-  final String condominio;
-  final String departamento;
-  final String clienteNombre;
-  final String rfc;
-  final int periodo;
+  final String? condominio;
+  final String? departamento;
+  final String? rfc;
+  final String? clienteNombre;
+  final String? lectura;
 
   Cliente({
+    this.periodo,
     required this.idCliente,
-    required this.condominio,
-    required this.departamento,
-    required this.clienteNombre,
-    required this.rfc,
-    required this.periodo,
+    this.condominio,
+    this.departamento,
+    this.rfc,
+    this.clienteNombre,
+    this.lectura,
   });
 
   Map<String, dynamic> toJson() {
     return {
+      if (periodo != null) 'periodo': periodo,
       'idCliente': idCliente,
-      'condominio': condominio,
-      'departamento': departamento,
-      'clienteNombre': clienteNombre,
-      'rfc': rfc,
-      'periodo': periodo,
+      if (condominio != null) 'condominio': condominio,
+      if (departamento != null) 'departamento': departamento,
+      if (rfc != null) 'rfc': rfc,
+      if (clienteNombre != null) 'clienteNombre': clienteNombre,
+      if (lectura != null) 'lectura': lectura,
     };
   }
 
   factory Cliente.fromJson(Map<String, dynamic> json) => Cliente(
+    periodo: json['periodo'],
     idCliente: json['idCliente'],
     condominio: json['condominio'],
     departamento: json['departamento'],
-    clienteNombre: json['clienteNombre'],
     rfc: json['rfc'],
-    periodo: json['periodo'],
+    clienteNombre: json['clienteNombre'],
+    lectura: json['lectura'],
   );
 
   factory Cliente.fromCustomFormat(String rawData) {
@@ -51,12 +55,13 @@ class Cliente {
     final periodo = now.year * 100 + now.month;
 
     return Cliente(
+      periodo: periodo,
       idCliente: int.tryParse(values[0]) ?? 0,
-      rfc: values[1],
-      clienteNombre: values[2],
       condominio: values[3],
       departamento: values[4],
-      periodo: periodo,
+      rfc: values[1],
+      clienteNombre: values[2],
+      lectura: null,
     );
   }
 }

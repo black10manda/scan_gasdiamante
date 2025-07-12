@@ -26,10 +26,10 @@ class LabeledTextField extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(
             '$label:',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         TextField(
           controller: controller,
           enabled: enabled,

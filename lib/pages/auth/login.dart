@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../services/user_storage.dart';
+import '../../services/storage/user_storage.dart';
 import '../admin/admin_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../lectura.dart';
+import '../registro_lectura/lectura.dart';
 import 'package:lectura_gas_diamante/widgets/password_text_field.dart';
 import 'package:lectura_gas_diamante/widgets/labeled_text_field.dart';
 import 'package:fluttertoast/fluttertoast.dart';
