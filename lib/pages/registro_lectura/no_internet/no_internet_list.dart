@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lectura_gas_diamante/pages/registro_lectura/no_internet/sections/lecturas_pendientes.dart';
 import 'package:lectura_gas_diamante/pages/registro_lectura/no_internet/sections/lecturas_enviadas.dart';
+import 'package:lectura_gas_diamante/pages/registro_lectura/no_internet/sections/lecturas_todas.dart';
 import 'package:lectura_gas_diamante/services/storage/lectura_offline_storage.dart';
 import 'package:lectura_gas_diamante/services/api/api_service.dart';
 import 'package:lectura_gas_diamante/models/registro_lectura_offline.dart';
@@ -18,8 +19,9 @@ class NoInternetListPage extends StatefulWidget {
 
 class _NoInternetListPageState extends State<NoInternetListPage>
     with SingleTickerProviderStateMixin {
-  final GlobalKey<LecturasPendientesPageState> _pendientesKey = GlobalKey();
-  final GlobalKey<LecturasEnviadasPageState> _enviadasKey = GlobalKey();
+  Key _keyPendientes = UniqueKey();
+  Key _keyEnviadas = UniqueKey();
+  Key _keyTodas = UniqueKey();
 
   Future<void> _obtenerInfFaltante() async {
     _showLoadingDialog();
@@ -79,11 +81,13 @@ class _NoInternetListPageState extends State<NoInternetListPage>
         const SnackBar(content: Text('Información obtenida exitosamente')),
       );
 
-      setState(() {});
+      setState(() {
+        _keyPendientes = UniqueKey();
+      });
 
-      if (_pendientesKey.currentState != null) {
-        _pendientesKey.currentState!.recargarLecturas();
-      }
+      // if (_pendientesKey.currentState != null) {
+      //   _pendientesKey.currentState!.recargarLecturas();
+      // }
     }
   }
 
@@ -168,18 +172,22 @@ class _NoInternetListPageState extends State<NoInternetListPage>
         ),
       );
 
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(const Duration(milliseconds: 600));
 
       if (!mounted) return;
       Navigator.pop(context);
 
-      setState(() {});
+      setState(() {
+        _keyPendientes = UniqueKey();
+        _keyEnviadas = UniqueKey();
+        _keyTodas = UniqueKey();
+      });
 
-      if (_pendientesKey.currentState != null &&
-          _enviadasKey.currentState != null) {
-        _pendientesKey.currentState!.recargarLecturas();
-        _enviadasKey.currentState!.recargarLecturas();
-      }
+      // if (_pendientesKey.currentState != null &&
+      //     _enviadasKey.currentState != null) {
+      //   _pendientesKey.currentState!.recargarLecturas();
+      //   _enviadasKey.currentState!.recargarLecturas();
+      // }
     }
   }
 
@@ -225,7 +233,7 @@ class _NoInternetListPageState extends State<NoInternetListPage>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Menú de Secciones'),
+          title: const Text('Registro de lecturas'),
           backgroundColor: const Color(0xFF971c17),
           foregroundColor: Colors.white,
           bottom: const TabBar(
@@ -242,9 +250,9 @@ class _NoInternetListPageState extends State<NoInternetListPage>
         body: SafeArea(
           child: TabBarView(
             children: [
-              LecturasPendientesPage(key: _pendientesKey),
-              LecturasEnviadasPage(key: _enviadasKey),
-              Center(child: Text('Contenido de Sección 3')),
+              LecturasPendientesPage(key: _keyPendientes),
+              LecturasEnviadasPage(key: _keyEnviadas),
+              LecturasTodasPage(key: _keyTodas),
             ],
           ),
         ),
@@ -302,7 +310,7 @@ class _NoInternetListPageState extends State<NoInternetListPage>
                     height: 80,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade700,
+                        backgroundColor: const Color(0xFF971c17),
                         foregroundColor: Colors.white,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.zero,
@@ -316,7 +324,7 @@ class _NoInternetListPageState extends State<NoInternetListPage>
                             child: Text(
                               'Sincronizar información con sinnube',
                               style: const TextStyle(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.normal,
                               ),
                               softWrap: true,

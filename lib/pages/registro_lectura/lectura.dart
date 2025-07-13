@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lectura_gas_diamante/models/cliente.dart';
 import 'package:lectura_gas_diamante/models/registro_lectura_offline.dart';
+import 'package:lectura_gas_diamante/pages/registro_lectura/depas_pendientes.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import '../../../../providers/user_provider.dart';
@@ -16,6 +17,7 @@ import 'package:lectura_gas_diamante/models/registro_lectura.dart';
 import 'package:flutter/services.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:lectura_gas_diamante/services/storage/config_storage.dart';
 
 class LecturaPage extends StatefulWidget {
   const LecturaPage({super.key});
@@ -134,19 +136,84 @@ class _LecturaPageState extends State<LecturaPage> {
 
   Future<void> _abrirCamaraYProcesarFoto() async {
     if (_idClienteController.text.trim().isNotEmpty) {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+
+      if (!mounted) return;
       final result = await Navigator.push<Map<String, String>>(
         context,
         MaterialPageRoute(builder: (_) => const CameraTextRecognizerPage()),
       );
 
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+
       if (result != null && context.mounted) {
-        setState(() {
-          _codigoMedidorController.text = result['codigoTexto'] ?? '';
-          _rutaFoto = result['rutaImagen'];
-        });
+        final codigoTexto = result['codigoTexto'] ?? '';
+        final rutaImagen = result['rutaImagen'];
+
+        final editableController = TextEditingController(text: codigoTexto);
+
+        if (!mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Confirmar lectura'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (rutaImagen != null)
+                    Image.file(File(rutaImagen), height: 160),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: editableController,
+                    decoration: const InputDecoration(
+                      labelText: 'Edtiar lectura',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Edita la lectura para que coincida con la imagen.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _codigoMedidorController.text = editableController.text;
+                      _rutaFoto = rutaImagen;
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Aceptar'),
+                ),
+              ],
+            );
+          },
+        );
       }
     } else {
-      _showErrorDialog('Primero debes escánear el código QR.');
+      _showErrorDialog('Primero debes escanear el código QR.');
     }
   }
 
@@ -282,6 +349,8 @@ class _LecturaPageState extends State<LecturaPage> {
         lectura: _codigoMedidorController.text,
       );
 
+      await upsertUltimoCondominio(cliente.condominio!);
+
       try {
         final bytes = await File(_rutaFoto!).readAsBytes();
 
@@ -406,12 +475,24 @@ class _LecturaPageState extends State<LecturaPage> {
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
                 );
+              } else if (value == 'depas') {
+                if (!context.mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DepasPendientesPage(),
+                  ),
+                );
               }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'logout',
                 child: Text('Cerrar sesión'),
+              ),
+              const PopupMenuItem(
+                value: 'depas',
+                child: Text('Departamentos pendientes'),
               ),
             ],
           ),

@@ -5,10 +5,15 @@ import 'package:lectura_gas_diamante/models/cliente.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:lectura_gas_diamante/models/registro_lectura.dart';
 import 'dart:convert';
+import 'package:lectura_gas_diamante/services/storage/config_storage.dart';
 
 class ApiService {
   static final String baseUrl =
       dotenv.env['API_URL'] ?? 'http://getpost.si-nube.appspot.com/';
+
+  // URL base para la API v1
+  static const String baseUrlV1 =
+      'https://ep-dot-gas-sinube.appspot.com/api/v1/';
 
   static Future<Cliente?> fetchClienteDetalle(int? idCliente) async {
     final siNubeData = await getSiNubeData();
@@ -73,6 +78,12 @@ class ApiService {
         );
       }
 
+      final hasInternet =
+          await InternetConnectionChecker.instance.hasConnection;
+      if (!hasInternet) {
+        throw Exception('Sin conexión a internet.');
+      }
+
       final cliente = registro.cliente;
 
       if ([
@@ -87,7 +98,7 @@ class ApiService {
       }
 
       final url = Uri.parse(
-        'https://ep-dot-gas-sinube.appspot.com/api/v1/lectura_agregar/${siNubeData.empresa}/${siNubeData.sucursal}/${siNubeData.usuario}/${siNubeData.password}',
+        '${baseUrlV1}lectura_agregar/${siNubeData.empresa}/${siNubeData.sucursal}/${siNubeData.usuario}/${siNubeData.password}',
       );
 
       final body = {
@@ -115,6 +126,105 @@ class ApiService {
         return true;
       } else {
         throw Exception('No se pudo envíar el registro.');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>>
+  obtenerDepartamentosPendientes() async {
+    final siNubeData = await getSiNubeData();
+
+    if (siNubeData == null) {
+      throw Exception(
+        'No hay configuración guardada (SiNubeData), acceda a la configuración de administrador.',
+      );
+    }
+
+    final hasInternet = await InternetConnectionChecker.instance.hasConnection;
+    if (!hasInternet) {
+      throw Exception('Sin conexión a internet.');
+    }
+
+    final condominio = await getUltimoCondominio();
+
+    if (condominio == null || condominio.isEmpty) {
+      throw Exception('No hay condominio guardado. Por favor configure uno.');
+    }
+
+    final now = DateTime.now();
+    final periodo = '${now.year}${now.month.toString().padLeft(2, '0')}';
+
+    final url = Uri.parse(
+      '${baseUrlV1}dameDepartamentosFaltantes/'
+      '${siNubeData.empresa}/${siNubeData.sucursal}/${siNubeData.usuario}/'
+      '${siNubeData.password}/$condominio/$periodo',
+    );
+
+    try {
+      final response = await http.post(url);
+
+      if (response.statusCode == 200) {
+        final jsonBody = jsonDecode(response.body);
+
+        if (jsonBody is Map<String, dynamic> &&
+            jsonBody.containsKey('departamentos')) {
+          final List departamentos = jsonBody['departamentos'];
+
+          return departamentos.cast<Map<String, dynamic>>();
+        } else {
+          return [];
+        }
+      } else {
+        throw Exception(
+          'Error al obtener departamentos pendientes (${response.statusCode}).',
+        );
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<List<String>> obtenerCondominios() async {
+    final siNubeData = await getSiNubeData();
+
+    if (siNubeData == null) {
+      throw Exception(
+        'No hay configuración guardada (SiNubeData), acceda a la configuración de administrador.',
+      );
+    }
+
+    final hasInternet = await InternetConnectionChecker.instance.hasConnection;
+    if (!hasInternet) {
+      throw Exception('Sin conexión a internet.');
+    }
+
+    final url = Uri.parse(
+      '${baseUrlV1}dameCondominios/'
+      '${siNubeData.empresa}/${siNubeData.sucursal}/${siNubeData.usuario}/'
+      '${siNubeData.password}',
+    );
+
+    try {
+      final response = await http.post(url);
+
+      if (response.statusCode == 200) {
+        final jsonBody = jsonDecode(response.body);
+
+        if (jsonBody is Map<String, dynamic> &&
+            jsonBody.containsKey('condominios')) {
+          final List condominios = jsonBody['condominios'];
+
+          // Convertimos la lista dinámica a lista de String
+          return List<String>.from(condominios);
+        } else {
+          return [];
+        }
+      } else {
+        throw Exception(
+          'Error al obtener condominios (${response.statusCode}).',
+        );
       }
     } catch (e) {
       rethrow;

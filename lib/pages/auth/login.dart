@@ -89,8 +89,8 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Image.asset(
                 'assets/images/logo_gas_diamante.jpg',
-                width: 400,
-                height: 400,
+                width: 350,
+                height: 350,
               ),
               LabeledTextField(label: 'Usuario', controller: _userController),
               const SizedBox(height: 16),
