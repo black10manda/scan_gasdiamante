@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import '../../models/sinube_data.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final storage = FlutterSecureStorage();
 const _keySiNubeData = 'sinube_data';
@@ -43,4 +44,26 @@ Future<bool> editSiNubeData(SiNubeData updatedData) async {
 
 Future<void> upsertSiNubeData(SiNubeData data) async {
   await saveSiNubeData(data);
+}
+
+Future<void> initSinubeData() async {
+  final data = await getSiNubeData();
+  if (data == null) {
+    final pass = dotenv.env['SINUBE_PASS']!.toString();
+    final empresa = dotenv.env['SINUBE_EMPRESA']!;
+    final sucursal = dotenv.env['SINUBE_SUCURSAL']!;
+    final usuario = dotenv.env['SINUBE_USUARIO']!;
+    final password = pass;
+    final calidad = 50;
+    final tamano = 50;
+    final dataGasDiamante = SiNubeData(
+      empresa: empresa,
+      sucursal: sucursal,
+      usuario: usuario,
+      password: password,
+      calidad: calidad,
+      tamano: tamano,
+    );
+    await saveSiNubeData(dataGasDiamante);
+  }
 }

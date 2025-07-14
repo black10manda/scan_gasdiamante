@@ -6,12 +6,14 @@ import 'providers/user_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/admin/users/admin_users_list.dart';
 import 'pages/registro_lectura/lectura.dart';
+import 'package:lectura_gas_diamante/services/storage/data_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load();
   await initAdminUser();
+  await initSinubeData();
 
   final userProvider = UserProvider();
   await userProvider.loadUser();
